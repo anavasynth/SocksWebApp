@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Оформлення замовлення</title>
+</head>
+<body>
+    <h2>Заповніть форму замовлення</h2>
+    <form id="orderForm">
+        <label for="name">Ім'я та прізвище:</label>
+        <input type="text" id="name" required><br><br>
+
+        <label for="phone">Номер телефону:</label>
+        <input type="tel" id="phone" required><br><br>
+
+        <label for="address">Адреса отримання (Нова пошта):</label>
+        <input type="text" id="address" required><br><br>
+
+        <button type="button" onclick="sendOrder()">Оформити</button>
+    </form>
+
+    <script>
+        function sendOrder() {
+            let orderData = {
+                name: document.getElementById("name").value,
+                phone: document.getElementById("phone").value,
+                address: document.getElementById("address").value
+            };
+
+            fetch("/submit", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(orderData)
+            })
+            .then(response => response.json())
+            .then(data => alert(data.message));
+        }
+    </script>
+</body>
+</html>
