@@ -8,8 +8,11 @@
 <body>
     <h2>Заповніть форму замовлення</h2>
     <form id="orderForm">
-        <label for="name">Ім'я та прізвище:</label>
-        <input type="text" id="name" required><br><br>
+        <label for="first_name">Ім'я:</label>
+        <input type="text" id="first_name" required><br><br>
+
+        <label for="surname">Прізвище:</label>
+        <input type="text" id="surname" required><br><br>
 
         <label for="phone">Номер телефону:</label>
         <input type="tel" id="phone" required><br><br>
@@ -23,7 +26,8 @@
     <script>
         function sendOrder() {
             let orderData = {
-                name: document.getElementById("name").value,
+                name: document.getElementById("first_name").value,
+                surname: document.getElementById("surname").value,
                 phone: document.getElementById("phone").value,
                 address: document.getElementById("address").value
             };
