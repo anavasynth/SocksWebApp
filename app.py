@@ -1,16 +1,20 @@
 from flask import Flask, render_template, request, jsonify
 import gspread
+import os
+from dotenv import load_dotenv
 from oauth2client.service_account import ServiceAccountCredentials
 
 app = Flask(__name__)
 
 # Підключення до Google Sheets
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-creds = ServiceAccountCredentials.from_json_keyfile_name("hale-mantra-452117-n7-d894ab047cfb.json", scope)
+creds_path = os.getenv("GOOGLE_CREDENTIALS_PATH")
+
+creds = ServiceAccountCredentials.from_json_keyfile_name(creds_path, scope)
 client = gspread.authorize(creds)
 
 # Відкриття таблиці (заміни "SHEET_ID" на свій)
-SHEET_ID = "1p7kRq95xdeO-Ux9uA_Z6XD2-c-4lZ-vZO35XS7DUdJw"
+SHEET_ID = os.getenv("SHEET_ID")
 sheet = client.open_by_key(SHEET_ID).sheet1
 
 @app.route("/")
