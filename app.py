@@ -21,7 +21,6 @@ sheet = client.open_by_key(SHEET_ID).sheet1
 def index():
     return render_template("index.html")
 
-
 @app.route('/submit' , methods = ['POST'])
 def submit():
     data = request.json
