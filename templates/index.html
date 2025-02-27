@@ -4,25 +4,48 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Оплата замовлення</title>
+     <!-- Підключення Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-    <h2>Заповніть форму замовлення</h2>
-    <form id="orderForm">
-        <label for="first_name">Ім'я:</label>
-        <input type="text" id="first_name" name="first_name" required><br><br>
+    <div class="container mt-5">
+        <h2 class="text-center mb-4">Заповніть форму замовлення</h2>
 
-        <label for="surname">Прізвище:</label>
-        <input type="text" id="surname" name="surname" required><br><br>
+        <!-- Форма замовлення -->
+        <form id="orderForm" class="needs-validation" novalidate>
+            <div class="mb-3">
+                <label for="first_name" class="form-label">Ім'я:</label>
+                <input type="text" class="form-control" id="first_name" name="first_name" required>
+                <div class="invalid-feedback">Будь ласка, введіть ваше ім'я.</div>
+            </div>
 
-        <label for="phone">Номер телефону:</label>
-        <input type="tel" id="phone" name="phone" required><br><br>
+            <div class="mb-3">
+                <label for="surname" class="form-label">Прізвище:</label>
+                <input type="text" class="form-control" id="surname" name="surname" required>
+                <div class="invalid-feedback">Будь ласка, введіть ваше прізвище.</div>
+            </div>
 
-        <label for="address">Адреса отримання:</label>
-        <input type="text" id="address" name="address" required><br><br>
+            <div class="mb-3">
+                <label for="phone" class="form-label">Номер телефону:</label>
+                <input type="tel" class="form-control" id="phone" name="phone" required>
+                <div class="invalid-feedback">Будь ласка, введіть номер телефону.</div>
+            </div>
 
-        <button type="submit">Оформити</button>
-    </form>
-    <div id="liqpay_checkout"></div>
+            <div class="mb-3">
+                <label for="address" class="form-label">Адреса отримання:</label>
+                <input type="text" class="form-control" id="address" name="address" required>
+                <div class="invalid-feedback">Будь ласка, введіть адресу.</div>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">Оформити</button>
+        </form>
+
+        <!-- Простір для відображення LiqPay Checkout -->
+        <div id="liqpay_checkout" class="mt-4"></div>
+    </div>
+
+    <!-- Підключення JS для Bootstrap (для роботи з валідацією форм) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
 document.getElementById("orderForm").addEventListener("submit", function (event) {
