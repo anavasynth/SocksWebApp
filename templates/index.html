@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Оплата замовлення</title>
-    <script src="//static.liqpay.ua/libjs/checkout.js" async></script>
 </head>
 <body>
     <h2>Заповніть форму замовлення</h2>
@@ -23,8 +22,6 @@
 
         <button type="submit">Оформити</button>
     </form>
-
-    <div id="liqpay_checkout"></div>
 
 <script>
     document.getElementById("orderForm").addEventListener("submit", function(event) {
@@ -45,48 +42,8 @@
         })
         .then(response => response.json())
         .then(data => {
-            if (data.data && data.signature) {
-                alert("Дані збережено! Відображення форми оплати...");
-
-                // Ініціалізація LiqPay Checkout
-                LiqPayCheckout.init({
-                    data: data.data,
-                    signature: data.signature,
-                    embedTo: "#liqpay_checkout",
-                    mode: "embed"
-                }).on("liqpay.callback", function(response) {
-                    console.log("Статус платежу:", response.status);
-
-                    // Якщо статус платежу успішний, відправляємо дані на сервер
-                    if (response.status === "success") {
-                        fetch("/payment_callback", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({
-                                status: response.status,
-                                order_id: response.order_id,
-                                amount: response.amount,
-                                description: response.description
-                            })
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            console.log(data.message); // Повідомлення від сервера
-                            alert("Платіж успішний, дані записано в таблицю.");
-                        })
-                        .catch(error => {
-                            console.error("Помилка під час запису в таблицю:", error);
-                            alert("Сталася помилка під час обробки платежу.");
-                        });
-                    } else {
-                        console.log("Платіж не успішний.");
-                        alert("Платіж не був успішним.");
-                    }
-                }).on("liqpay.ready", function() {
-                    console.log("Готово до оплати");
-                }).on("liqpay.close", function() {
-                    console.log("Вікно платежу закрите");
-                });
+            if (data.redirect_url) {
+                window.location.href = data.redirect_url; // Перенаправлення на сторінку оплати
             } else {
                 alert("Помилка при створенні платежу!");
             }
@@ -94,7 +51,5 @@
         .catch(error => alert("Помилка! Спробуйте ще раз."));
     });
 </script>
-
-<script src="//static.liqpay.ua/libjs/checkout.js" async></script>
 </body>
 </html>
