@@ -6,35 +6,54 @@
     <title>Оплата замовлення</title>
      <!-- Підключення Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .form-control {
+    background-color: #333;
+    color: #fff;
+    border: 1px solid #555;
+}
+.form-control:focus {
+    background-color: #444;
+    color: #fff;
+    border-color: #777;
+}
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+body{
+    background: #444444;
+}
+    </style>
 </head>
 <body>
-    <div class="container mt-5">
+    <div class="container mt-5 bg-dark text-light p-4 rounded">
         <h2 class="text-center mb-4">Заповніть форму замовлення</h2>
 
         <!-- Форма замовлення -->
         <form id="orderForm" class="needs-validation" novalidate>
             <div class="mb-3">
                 <label for="first_name" class="form-label">Ім'я:</label>
-                <input type="text" class="form-control" id="first_name" name="first_name" required>
-                <div class="invalid-feedback">Будь ласка, введіть ваше ім'я.</div>
+                <input type="text" class="form-control" id="first_name" name="first_name" required minlength="2">
+                <div class="invalid-feedback">Ім'я повинно містити не менше 2 символів.</div>
             </div>
 
             <div class="mb-3">
                 <label for="surname" class="form-label">Прізвище:</label>
-                <input type="text" class="form-control" id="surname" name="surname" required>
-                <div class="invalid-feedback">Будь ласка, введіть ваше прізвище.</div>
+                <input type="text" class="form-control" id="surname" name="surname" required minlength="2">
+                <div class="invalid-feedback">Прізвище повинно містити не менше 2 символів.</div>
             </div>
 
             <div class="mb-3">
                 <label for="phone" class="form-label">Номер телефону:</label>
-                <input type="tel" class="form-control" id="phone" name="phone" required>
-                <div class="invalid-feedback">Будь ласка, введіть номер телефону.</div>
+                <input type="tel" class="form-control" id="phone" name="phone" pattern="\+?[0-9]{10,}" required>
+                <div class="invalid-feedback">Введіть коректний номер телефону (мінімум 10 цифр, допускається + на початку).</div>
             </div>
 
             <div class="mb-3">
                 <label for="address" class="form-label">Адреса отримання:</label>
-                <input type="text" class="form-control" id="address" name="address" required>
-                <div class="invalid-feedback">Будь ласка, введіть адресу.</div>
+                <input type="text" class="form-control" id="address" name="address" required minlength="5">
+                <div class="invalid-feedback">Адреса повинна містити не менше 5 символів.</div>
             </div>
 
             <button type="submit" class="btn btn-primary w-100">Оформити</button>
@@ -51,6 +70,17 @@
 document.getElementById("orderForm").addEventListener("submit", function (event) {
     event.preventDefault();
 
+    let form = this;
+
+    // Перевірка валідності
+    if (!form.checkValidity()) {
+        event.stopPropagation();
+        form.classList.add("was-validated");
+        return; // Зупиняємо виконання, якщо форма не валідна
+    }
+
+    form.classList.add("was-validated");
+
     let orderData = {
         name: document.getElementById("first_name").value,
         surname: document.getElementById("surname").value,
@@ -58,7 +88,7 @@ document.getElementById("orderForm").addEventListener("submit", function (event)
         address: document.getElementById("address").value
     };
 
-    // Відправка даних на сервер для ініціалізації платежу
+    // Відправка даних на сервер
     fetch("/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -66,41 +96,35 @@ document.getElementById("orderForm").addEventListener("submit", function (event)
     })
     .then(response => response.json())
     .then(data => {
-    if (data.data && data.signature) {
-        alert("Дані збережено! Відображення форми оплати...");
+        if (data.data && data.signature) {
+            alert("Дані збережено! Відображення форми оплати...");
 
-        // Ініціалізація LiqPay Checkout
-        LiqPayCheckout.init({
-            data: data.data,
-            signature: data.signature,
-            embedTo: "#liqpay_checkout",
-            mode: "popup"
-        }).on("liqpay.callback", function (response) {
-            console.log("Статус платежу:", response.status);
+            // Ініціалізація LiqPay Checkout
+            LiqPayCheckout.init({
+                data: data.data,
+                signature: data.signature,
+                embedTo: "#liqpay_checkout",
+                mode: "popup"
+            }).on("liqpay.callback", function (response) {
+                console.log("Статус платежу:", response.status);
 
-            // Якщо статус платежу успішний, перевіряємо дані перед відправкою
-            if (response.status === "success") {
-                if (response.order_id && response.amount && response.description) {
+                if (response.status === "success") {
                     fetch("/payment_callback", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
-                            data: data.data,  // Дані платежу, які отримали з сервера
-                            signature: data.signature,  // Підпис, який також отримали з сервера
+                            data: data.data,
+                            signature: data.signature,
                             status: response.status,
-                            //order_id: response.order_id,
-                            //amount: response.amount,
-                            //description: response.description
+                            name: data.name,
+                            surname: data.surname,
+                            phone: data.phone,
+                            address: data.address
                         })
                     })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error("Помилка на сервері при записі платежу.");
-                        }
-                        return response.json();
-                    })
+                    .then(response => response.json())
                     .then(data => {
-                        console.log(data.message); // Повідомлення від сервера
+                        console.log(data.message);
                         alert("Платіж успішний, дані записано в таблицю.");
                     })
                     .catch(error => {
@@ -108,22 +132,17 @@ document.getElementById("orderForm").addEventListener("submit", function (event)
                         alert("Сталася помилка під час обробки платежу.");
                     });
                 } else {
-                    console.error("Відсутні необхідні дані для запису платежу:", response);
-                    alert("Платіж успішний, але не вдалося записати дані.");
+                    alert("Платіж не був успішним.");
                 }
-            } else {
-                console.log("Платіж не успішний.");
-                alert("Платіж не був успішним.");
-            }
-        }).on("liqpay.ready", function () {
-            console.log("Готово до оплати");
-        }).on("liqpay.close", function () {
-            console.log("Вікно платежу закрите");
-        });
-    } else {
-        alert("Помилка при створенні платежу!");
-    }
-})
+            }).on("liqpay.ready", function () {
+                console.log("Готово до оплати");
+            }).on("liqpay.close", function () {
+                console.log("Вікно платежу закрите");
+            });
+        } else {
+            alert("Помилка при створенні платежу!");
+        }
+    })
     .catch(error => {
         console.error("Помилка при створенні платежу:", error);
         alert("Помилка! Спробуйте ще раз.");

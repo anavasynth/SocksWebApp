@@ -68,7 +68,11 @@ def submit():
     return jsonify({
         "message": "Дані збережено! Перенаправлення на оплату...",
         "data": data_str,
-        "signature": signature_str
+        "signature": signature_str,
+        "name": name,
+        "surname": surname,
+        "phone": phone,
+        "address": address,
     }), 200
 
 @app.route('/payment_callback', methods=['POST'])
@@ -78,7 +82,12 @@ def payment_callback():
         data = request.get_json().get('data')
         signature = request.get_json().get('signature')
         status = request.get_json().get('status')
+        name = request.get_json().get('name')
+        surname = request.get_json().get('surname')
+        phone = request.get_json().get('phone')
+        address = request.get_json().get('address')
         print(status)
+        print(name, surname, phone, address)
 
         if not data or not signature:
             logging.error("Немає необхідних даних або підпису в запиті.")
@@ -112,7 +121,7 @@ def payment_callback():
 
     # Якщо статус успішний, записуємо у таблицю
     if status == 'success':
-        sheet.append_row([order_id, status, amount, description])
+        sheet.append_row([name, surname, phone, address, amount, status])
         logging.info("Платіж успішно записано в таблицю")
         return jsonify({"message": "Платіж успішний, дані записано в таблицю."}), 200
 
