@@ -22,34 +22,91 @@
 
         <button type="submit">Оформити</button>
     </form>
+    <div id="liqpay_checkout"></div>
 
 <script>
-    document.getElementById("orderForm").addEventListener("submit", function(event) {
-        event.preventDefault();
+document.getElementById("orderForm").addEventListener("submit", function (event) {
+    event.preventDefault();
 
-        let orderData = {
-            name: document.getElementById("first_name").value,
-            surname: document.getElementById("surname").value,
-            phone: document.getElementById("phone").value,
-            address: document.getElementById("address").value
-        };
+    let orderData = {
+        name: document.getElementById("first_name").value,
+        surname: document.getElementById("surname").value,
+        phone: document.getElementById("phone").value,
+        address: document.getElementById("address").value
+    };
 
-        // Відправка даних на сервер для ініціалізації платежу
-        fetch("/submit", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(orderData)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.redirect_url) {
-                window.location.href = data.redirect_url; // Перенаправлення на сторінку оплати
+    // Відправка даних на сервер для ініціалізації платежу
+    fetch("/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(orderData)
+    })
+    .then(response => response.json())
+    .then(data => {
+    if (data.data && data.signature) {
+        alert("Дані збережено! Відображення форми оплати...");
+
+        // Ініціалізація LiqPay Checkout
+        LiqPayCheckout.init({
+            data: data.data,
+            signature: data.signature,
+            embedTo: "#liqpay_checkout",
+            mode: "popup"
+        }).on("liqpay.callback", function (response) {
+            console.log("Статус платежу:", response.status);
+
+            // Якщо статус платежу успішний, перевіряємо дані перед відправкою
+            if (response.status === "success") {
+                if (response.order_id && response.amount && response.description) {
+                    fetch("/payment_callback", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            data: data.data,  // Дані платежу, які отримали з сервера
+                            signature: data.signature,  // Підпис, який також отримали з сервера
+                            status: response.status,
+                            //order_id: response.order_id,
+                            //amount: response.amount,
+                            //description: response.description
+                        })
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error("Помилка на сервері при записі платежу.");
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log(data.message); // Повідомлення від сервера
+                        alert("Платіж успішний, дані записано в таблицю.");
+                    })
+                    .catch(error => {
+                        console.error("Помилка під час запису в таблицю:", error);
+                        alert("Сталася помилка під час обробки платежу.");
+                    });
+                } else {
+                    console.error("Відсутні необхідні дані для запису платежу:", response);
+                    alert("Платіж успішний, але не вдалося записати дані.");
+                }
             } else {
-                alert("Помилка при створенні платежу!");
+                console.log("Платіж не успішний.");
+                alert("Платіж не був успішним.");
             }
-        })
-        .catch(error => alert("Помилка! Спробуйте ще раз."));
+        }).on("liqpay.ready", function () {
+            console.log("Готово до оплати");
+        }).on("liqpay.close", function () {
+            console.log("Вікно платежу закрите");
+        });
+    } else {
+        alert("Помилка при створенні платежу!");
+    }
+})
+    .catch(error => {
+        console.error("Помилка при створенні платежу:", error);
+        alert("Помилка! Спробуйте ще раз.");
     });
+});
 </script>
+<script src="//static.liqpay.ua/libjs/checkout.js" async></script>
 </body>
 </html>
