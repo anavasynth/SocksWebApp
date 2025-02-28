@@ -65,8 +65,11 @@ body{
 
     <!-- Підключення JS для Bootstrap (для роботи з валідацією форм) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-
+<script src="https://telegram.org/js/telegram-web-app.js?56"></script>
 <script>
+let tg = window.Telegram.WebApp;  // Отримуємо WebApp об'єкт
+let chat_id = tg.initDataUnsafe?.user?.id; // Отримуємо chat_id
+
 document.getElementById("orderForm").addEventListener("submit", function (event) {
     event.preventDefault();
 
@@ -85,7 +88,8 @@ document.getElementById("orderForm").addEventListener("submit", function (event)
         name: document.getElementById("first_name").value,
         surname: document.getElementById("surname").value,
         phone: document.getElementById("phone").value,
-        address: document.getElementById("address").value
+        address: document.getElementById("address").value,
+        chat_id: chat_id  // Додаємо chat_id до запиту
     };
 
     // Відправка даних на сервер
@@ -119,7 +123,8 @@ document.getElementById("orderForm").addEventListener("submit", function (event)
                             name: data.name,
                             surname: data.surname,
                             phone: data.phone,
-                            address: data.address
+                            address: data.address,
+                            chat_id: chat_id  // Передаємо chat_id
                         })
                     })
                     .then(response => response.json())

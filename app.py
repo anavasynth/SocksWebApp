@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from oauth2client.service_account import ServiceAccountCredentials
 from flask_cors import CORS
 import logging
+import requests
 
 # Налаштування логування
 logging.basicConfig(level=logging.INFO)
@@ -32,9 +33,22 @@ sheet = client.open_by_key(SHEET_ID).sheet1
 LIQPAY_PUBLIC_KEY = os.getenv("LIQPAY_PUBLIC_KEY")
 LIQPAY_PRIVATE_KEY = os.getenv("LIQPAY_PRIVATE_KEY")
 
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+
 @app.route("/")
 def index():
     return render_template("index.html")
+
+
+def send_telegram_message(chat_id, message):
+    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+    payload = {
+        "chat_id": chat_id,
+        "text": message,
+        "parse_mode": "Markdown"
+    }
+    response = requests.post(url, json=payload)
+    return response.json()
 
 @app.route('/submit', methods=['POST'])
 def submit():
@@ -123,6 +137,10 @@ def payment_callback():
     if status == 'success':
         sheet.append_row([name, surname, phone, address, amount, status])
         logging.info("Платіж успішно записано в таблицю")
+        chat_id = data.get("chat_id")
+        if chat_id:
+            message = "🎉 Дякуємо за ваше замовлення! Оплата пройшла успішно. Очікуйте доставку. 🚀"
+            send_telegram_message(chat_id , message)
         return jsonify({"message": "Платіж успішний, дані записано в таблицю."}), 200
 
     return jsonify({"message": "Платіж не успішний."}), 400
