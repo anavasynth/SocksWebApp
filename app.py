@@ -137,15 +137,13 @@ def payment_callback():
     if status == 'success':
         sheet.append_row([name, surname, phone, address, amount, status])
         logging.info("Платіж успішно записано в таблицю")
-        chat_id = data.get("chat_id")
+        chat_id = request.get_json().get('chat_id')
         if chat_id:
             message = "🎉 Дякуємо за ваше замовлення! Оплата пройшла успішно. Очікуйте доставку. 🚀"
             send_telegram_message(chat_id , message)
         return jsonify({"message": "Платіж успішний, дані записано в таблицю."}), 200
 
     return jsonify({"message": "Платіж не успішний."}), 400
-
-
 
 
 
