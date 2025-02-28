@@ -70,6 +70,13 @@ body{
 let tg = window.Telegram.WebApp;  // Отримуємо WebApp об'єкт
 let chat_id = tg.initDataUnsafe?.user?.id; // Отримуємо chat_id
 
+tg.expand(); // Розгортає WebApp у повний екран
+
+console.log("Telegram WebApp:", tg);
+console.log("initData:", tg.initData);
+console.log("initDataUnsafe:", tg.initDataUnsafe);
+console.log("User ID:", tg.initDataUnsafe?.user?.id);
+
 document.getElementById("orderForm").addEventListener("submit", function (event) {
     event.preventDefault();
 
