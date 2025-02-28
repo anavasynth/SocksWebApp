@@ -58,6 +58,7 @@ def submit():
     surname = data.get("surname")
     phone = data.get("phone")
     address = data.get("address")
+    chat_id = data.get("chat_id")
 
     amount = 100  # Фіксована сума (можна змінювати динамічно)
 
@@ -87,6 +88,7 @@ def submit():
         "surname": surname,
         "phone": phone,
         "address": address,
+        "chat_id": chat_id
     }), 200
 
 @app.route('/payment_callback', methods=['POST'])
