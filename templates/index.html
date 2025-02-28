@@ -124,7 +124,7 @@ document.getElementById("orderForm").addEventListener("submit", function (event)
                             surname: data.surname,
                             phone: data.phone,
                             address: data.address,
-                            chat_id: chat_id  // Передаємо chat_id
+                            chat_id: data.chat_id  // Передаємо chat_id
                         })
                     })
                     .then(response => response.json())
