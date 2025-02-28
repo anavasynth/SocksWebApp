@@ -77,6 +77,8 @@ console.log("initData:", tg.initData);
 console.log("initDataUnsafe:", tg.initDataUnsafe);
 console.log("User ID:", tg.initDataUnsafe?.user?.id);
 
+alert(JSON.stringify(tg.initDataUnsafe, null, 2));
+
 document.getElementById("orderForm").addEventListener("submit", function (event) {
     event.preventDefault();
 
