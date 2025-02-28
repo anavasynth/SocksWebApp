@@ -35,6 +35,20 @@ LIQPAY_PRIVATE_KEY = os.getenv("LIQPAY_PRIVATE_KEY")
 
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 
+app.config['UPLOAD_FOLDER'] = 'static/uploads'
+
+app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
+
+# Перевірка чи є файл з дозволеним розширенням
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
+
+# Перевірка наявності products.json, створення порожнього файлу, якщо він не існує
+def init_products():
+    if not os.path.exists('products.json'):
+        with open('products.json', 'w', encoding='utf-8') as f:
+            json.dump([], f, ensure_ascii=False, indent=4)
+
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -42,6 +56,54 @@ def index():
 @app.route("/admin")
 def admin():
     return render_template("admin.html")
+
+
+@app.route('/add_product' , methods = ['POST'])
+def add_product():
+    if 'photo' not in request.files:
+        return "Фото не вибрано" , 400
+
+    file = request.files['photo']
+
+    if file.filename == '':
+        return 'Фото не вибрано' , 400
+
+    if file and allowed_file(file.filename):
+        # Генеруємо унікальне ім'я для файлу
+        filename = f"{len(os.listdir(app.config['UPLOAD_FOLDER'])) + 1}_{file.filename}"
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'] , filename)
+
+        # Зберігаємо файл
+        file.save(filepath)
+
+        # Отримуємо дані з форми
+        name = request.form['name']
+        description = request.form['description']
+        size = request.form['size']
+
+        # Перевіряємо наявність файлу JSON, якщо його немає, створюємо
+        init_products()
+
+        # Завантажуємо поточний асортимент з JSON
+        with open('products.json' , 'r' , encoding = 'utf-8') as f:
+            products = json.load(f)
+
+        # Додаємо новий товар
+        new_product = {
+            "id": str(len(products) + 1) ,
+            "name": name ,
+            "description": description ,
+            "photo": f"/static/uploads/{filename}" ,  # Зберігаємо шлях до фото
+            "sizes": [size]
+        }
+
+        products.append(new_product)
+
+        # Зберігаємо оновлений асортимент у JSON
+        with open('products.json' , 'w' , encoding = 'utf-8') as f:
+            json.dump(products , f , ensure_ascii = False , indent = 4)
+
+        return redirect('/admin')  # Перенаправляємо назад до адмін панелі
 
 
 def send_telegram_message(chat_id, message):

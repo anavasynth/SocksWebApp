@@ -7,5 +7,24 @@
 <body>
     <h1>Адмін Панель</h1>
     <img src="https://narcology.clinic/netcat_files/375_186382.jpg" alt="">
+    <h1>Додати новий товар</h1>
+    <form action="/add_product" method="POST" enctype="multipart/form-data">
+        <label for="name">Назва товару:</label><br>
+        <input type="text" id="name" name="name" required><br><br>
+
+        <label for="description">Опис товару:</label><br>
+        <textarea id="description" name="description" required></textarea><br><br>
+
+        <label for="photo">Фото товару:</label><br>
+        <input type="file" id="photo" name="photo" accept="image/*" required><br><br>
+
+        <label for="size">Розмір:</label><br>
+        <select name="size" id="size" required>
+            <option value="M">M</option>
+            <option value="L">L</option>
+        </select><br><br>
+
+        <button type="submit">Додати товар</button>
+    </form>
 </body>
 </html>
